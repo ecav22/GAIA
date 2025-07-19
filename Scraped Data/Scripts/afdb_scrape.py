@@ -1,32 +1,39 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from bs4 import BeautifulSoup
 import time
 
-# Setup headless Chrome
-options = Options()
-options.add_argument("--headless")
-options.add_argument("--disable-gpu")
-options.add_argument("--no-sandbox")
-options.add_argument("window-size=1920x1080")
-options.add_argument("user-agent=Mozilla/5.0 ...")  # Optional
 
-driver = webdriver.Chrome(options=options)
+def main():
+    """Scrape AfDB documents page and return list of links."""
+    # Setup headless Chrome
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.add_argument("window-size=1920x1080")
+    options.add_argument("user-agent=Mozilla/5.0 ...")  # Optional
 
-# Load the page
-driver.get("https://www.afdb.org/en/documents/projects-operations")
+    driver = webdriver.Chrome(options=options)
 
-# Let JavaScript load (Cloudflare check)
-time.sleep(10)  # Wait until Cloudflare passes
+    # Load the page
+    driver.get("https://www.afdb.org/en/documents/projects-operations")
 
-# Extract page source
-html = driver.page_source
+    # Let JavaScript load (Cloudflare check)
+    time.sleep(10)  # Wait until Cloudflare passes
 
-# (Optional) Pass to BeautifulSoup
-from bs4 import BeautifulSoup
-soup = BeautifulSoup(html, "html.parser")
+    # Extract page source
+    html = driver.page_source
 
-# Example: get all links
-for a in soup.find_all("a", href=True):
-    print(a["href"])
+    # Parse page
+    soup = BeautifulSoup(html, "html.parser")
 
-driver.quit()
+    # Collect all links
+    links = [a["href"] for a in soup.find_all("a", href=True)]
+
+    driver.quit()
+    return links
+
+
+if __name__ == "__main__":
+    main()
